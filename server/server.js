@@ -41,7 +41,10 @@ const insertObjectS3 = async ({ file, bucketName, idNumber, fileId = uuidv4() })
     const data = await upload.done();
     console.log("S3 Response:", data);
 
-    return `https://${bucketName}.s3.amazonaws.com/${key}`;
+    return {
+      url: `https://${bucketName}.s3.amazonaws.com/${key}`,
+      key: key,
+    };
   } catch (err) {
     console.error("Error uploading to S3:", err);
     throw new Error("Failed to upload file");
@@ -70,7 +73,7 @@ app.post("/upload", (req, res) => {
     }
 
     try {
-      const url = await insertObjectS3({
+      const { url, key } = await insertObjectS3({
         file: files.file,
         bucketName: "atd-tester-bucket",
         idNumber,
@@ -79,6 +82,7 @@ app.post("/upload", (req, res) => {
       res.status(200).json({
         message: "File uploaded successfully",
         url,
+        fileKey: key,
       });
     } catch (err) {
       console.error(err);

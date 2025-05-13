@@ -80,29 +80,35 @@ export default {
       this.selectedFile = event.target.files[0];
     },
     async uploadFile() {
-      if (!this.selectedFile || !this.userId) {
-        alert("אנא בחר קובץ והכנס תעודת זהות.");
-        return;
-      }
+  if (!this.selectedFile || !this.userId) {
+    alert("אנא בחר קובץ והכנס תעודת זהות.");
+    return;
+  }
 
-      const formData = new FormData();
-      formData.append("file", this.selectedFile);
-      formData.append("userId", this.userId);
+  const formData = new FormData();
+  formData.append("file", this.selectedFile);
+  formData.append("userId", this.userId);
 
-      try {
-        const response = await axios.post("http://localhost:3000/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+  try {
+    const response = await axios.post("http://localhost:3000/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-        if (response.data.url) {
-          this.fileUrl = response.data.url;
-        }
-      } catch (error) {
-        console.error("שגיאה בהעלאת קובץ:", error);
-      }
-    },
+    console.log("תגובה מהשרת:", response.data);
+
+    if (response.data.url && response.data.fileKey) {
+      this.fileUrl = response.data.url;
+
+      const { id, uuid } = this.parseFileKey(response.data.fileKey);
+      alert(`הקובץ הועלה בהצלחה!\nתעודת זהות: ${id}\nמזהה ייחודי (UUID): ${uuid}`);
+    }
+  } catch (error) {
+    console.error("שגיאה בהעלאת קובץ:", error);
+  }
+},
+
     async fetchFilesById() {
   // ניקוי נתונים ודגלים
   this.clearTables();
