@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors')
 const fs = require("fs");
 const { IncomingForm } = require("formidable");
 const { Upload } = require("@aws-sdk/lib-storage");
@@ -8,6 +9,7 @@ const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const port = 3000;
+app.use(cors({ origin: "http://localhost:8080" }));
 
 const bucketName = "atd-tester-bucket"; 
 
