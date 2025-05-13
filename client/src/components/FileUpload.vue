@@ -10,6 +10,7 @@
 
     <button @click="fetchFilesById" class="btn">הצג קבצים לפי תעודת זהות</button>
     <button @click="fetchAllFiles" class="btn">הצג את כל הקבצים</button>
+    <button @click="clearTables" class="btn">נקה</button>
 
     <!-- טבלת קבצים לפי ת"ז -->
     <div v-if="filesById.length" class="table-wrapper">
@@ -70,6 +71,8 @@ export default {
       userId: "",
       filesById: [],
       allFiles: [],
+      showFilesById: false, // מצב האם להציג את קבצים לפי ת"ז
+      showAllFiles: false,  // מצב האם להציג את כל הקבצים
     };
   },
   methods: {
@@ -101,42 +104,57 @@ export default {
       }
     },
     async fetchFilesById() {
-      if (!this.userId) {
-        alert("אנא הכנס תעודת זהות.");
-        return;
-      }
+  // ניקוי נתונים ודגלים
+  this.clearTables();
 
-      try {
-        const response = await axios.get(`http://localhost:3000/fileById/${this.userId}`);
-        console.log("קבצים לפי תעודת זהות:", response.data.fetchFilesById);
-        this.filesById = response.data.files;
-      } catch (error) {
-        console.error("שגיאה בקבלת קבצים לפי תעודת זהות:", error);
-      }
-    },
-    async fetchAllFiles() {
-      try {
-        const response = await axios.get("http://localhost:3000/files");
-        console.log("כל הקבצים:", response.data);
-        this.allFiles = response.data;
-      } catch (error) {
-        console.error("שגיאה בקבלת כל הקבצים:", error);
-      }
+  if (!this.userId) {
+    alert("אנא הכנס תעודת זהות.");
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://localhost:3000/fileById/${this.userId}`);
+    console.log("קבצים לפי תעודת זהות:", response.data.fetchFilesById);
+    this.filesById = response.data.files;
+    this.showFilesById = true; // הצגת טבלה
+  } catch (error) {
+    console.error("שגיאה בקבלת קבצים לפי תעודת זהות:", error);
+  }
+},
+
+async fetchAllFiles() {
+  // ניקוי נתונים ודגלים
+  this.clearTables();
+
+  try {
+    const response = await axios.get("http://localhost:3000/files");
+    console.log("כל הקבצים:", response.data);
+    this.allFiles = response.data;
+    this.showAllFiles = true; // הצגת טבלה
+  } catch (error) {
+    console.error("שגיאה בקבלת כל הקבצים:", error);
+  }
+},
+    clearTables() {
+      this.filesById = [];
+      this.allFiles = [];
+      this.showFilesById = false;
+      this.showAllFiles = false;
     },
     parseFileKey(key) {
-  if (!key || typeof key !== 'string') {
-    return { id: '', uuid: '', type: '' };
-  }
+      if (!key || typeof key !== 'string') {
+        return { id: '', uuid: '', type: '' };
+      }
 
-  const [id, filePart] = key.split("/");
-  if (!filePart) {
-    return { id, uuid: '', type: '' };
-  }
+      const [id, filePart] = key.split("/");
+      if (!filePart) {
+        return { id, uuid: '', type: '' };
+      }
 
-  const [uuid, ...rest] = filePart.split(".");
-  const type = rest.join(".");
-  return { id, uuid, type };
-},
+      const [uuid, ...rest] = filePart.split(".");
+      const type = rest.join(".");
+      return { id, uuid, type };
+    },
   },
 };
 </script>
