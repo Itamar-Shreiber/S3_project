@@ -82,7 +82,7 @@ app.post("/upload", (req, res) => {
     try {
       const { url, key } = await insertObjectS3({
         file: files.file,
-        bucketName: "atd-tester-bucket",
+        bucketName: bucketName,
         idNumber,
       });
 
@@ -108,7 +108,7 @@ app.get("/fileById/:userId", async (req, res) => {
   
     try {
       const params = {
-        Bucket: "atd-tester-bucket",
+        Bucket: bucketName,
         Prefix: `${userId}/`, // מחפש קבצים לפי ת"ז
       };
   
