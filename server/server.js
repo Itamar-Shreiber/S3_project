@@ -6,6 +6,8 @@ const { Upload } = require("@aws-sdk/lib-storage");
 const { S3Client, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { s3 } = require("./s3");
 const { v4: uuidv4 } = require("uuid");
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const app = express();
 const port = 3000;
@@ -112,10 +114,21 @@ app.get("/fileById/:userId", async (req, res) => {
         return res.json({ files: [] });
       }
   
-      const files = data.Contents.map((file) => ({
-        url: `https://${params.Bucket}.s3.amazonaws.com/${file.Key}`,
-        key: file.Key,
-      }));
+      const files = await Promise.all(
+        data.Contents.map(async (file) => {
+          const command = new GetObjectCommand({
+            Bucket: params.Bucket,
+            Key: file.Key,
+          });
+      
+          const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // שעה
+      
+          return {
+            url: signedUrl,
+            key: file.Key,
+          };
+        })
+      );      
   
       res.json({ files });
     } catch (error) {
@@ -136,10 +149,21 @@ app.get("/fileById/:userId", async (req, res) => {
         return res.json([]);
       }
   
-      const fileUrls = data.Contents.map((file) => ({
-        key: file.Key,
-        url: `https://${bucketName}.s3.amazonaws.com/${file.Key}`,
-      }));
+      const fileUrls = await Promise.all(
+        data.Contents.map(async (file) => {
+          const command = new GetObjectCommand({
+            Bucket: bucketName,
+            Key: file.Key,
+          });
+      
+          const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // תוקף שעה
+      
+          return {
+            key: file.Key,
+            url: signedUrl,
+          };
+        })
+      );      
   
       res.json(fileUrls);
     } catch (error) {
