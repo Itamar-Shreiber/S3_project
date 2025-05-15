@@ -30,6 +30,7 @@
             <td>{{ parseFileKey(file.key).uuid }}</td>
             <td>{{ parseFileKey(file.key).type }}</td>
             <td><a :href="file.url" target="_blank">הורדה</a></td>
+            <td><button @click="deleteFile(file.key)" class="btn btn-danger">🗑 מחק</button></td>
           </tr>
         </tbody>
       </table>
@@ -53,6 +54,7 @@
             <td>{{ parseFileKey(file.key).uuid }}</td>
             <td>{{ parseFileKey(file.key).type }}</td>
             <td><a :href="file.url" target="_blank">הורדה</a></td>
+            <td><button @click="deleteFile(file.key)" class="btn btn-danger">🗑 מחק</button></td>
           </tr>
         </tbody>
       </table>
@@ -141,6 +143,26 @@ async fetchAllFiles() {
     console.error("שגיאה בקבלת כל הקבצים:", error);
   }
 },
+async deleteFile(fileKey) {
+  if (!confirm("האם אתה בטוח שברצונך למחוק את הקובץ הזה?")) {
+    return;
+  }
+
+  try {
+    await axios.delete(`http://localhost:3000/delete-file/${encodeURIComponent(fileKey)}`);
+      alert("הקובץ נמחק בהצלחה.");
+
+      // רענון הטבלאות אחרי מחיקה
+      if (this.userId) {
+        await this.fetchFilesById();
+      } else {
+        await this.fetchAllFiles();
+      }
+    } catch (error) {
+      console.error("שגיאה במחיקת הקובץ:", error);
+    }
+},
+
     clearTables() {
       this.filesById = [];
       this.allFiles = [];

@@ -1,19 +1,24 @@
 const express = require("express");
-const cors = require('cors')
+const cors = require("cors");
 const fs = require("fs");
 const { IncomingForm } = require("formidable");
 const { Upload } = require("@aws-sdk/lib-storage");
-const { S3Client, ListObjectsV2Command } = require("@aws-sdk/client-s3");
-const { s3 } = require("./s3");
-const { v4: uuidv4 } = require("uuid");
-const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  ListObjectsV2Command,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { v4: uuidv4 } = require("uuid");
+const { s3 } = require("./s3"); // הגדרת לקוח S3 מותאם אישית שלך
 
 const app = express();
 const port = 3000;
+
 app.use(cors({ origin: "http://localhost:8080" }));
 
-const bucketName = "atd-tester-bucket"; 
+const bucketName = "atd-tester-bucket";
+
 
 const insertObjectS3 = async ({ file, bucketName, idNumber, fileId = uuidv4() }) => {
   const uploadedFile = Array.isArray(file) ? file[0] : file;
@@ -171,6 +176,29 @@ app.get("/fileById/:userId", async (req, res) => {
       res.status(500).json({ error: "Failed to fetch files" });
     }
   });
+
+  app.delete("/delete-file/:key", async (req, res) => {
+    const key = decodeURIComponent(req.params.key);  
+    console.log("Received key for deletion:", key);
+  
+    if (!key) {
+      return res.status(400).json({ error: "Missing file key" });
+    }
+  
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      });
+  
+      await s3.send(command);
+      res.json({ message: "File deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ error: "Failed to delete file" });
+    }
+  });
+  
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
