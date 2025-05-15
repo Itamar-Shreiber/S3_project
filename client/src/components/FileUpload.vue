@@ -4,13 +4,16 @@
 
     <input type="text" v-model="userId" placeholder="הכנס תעודת זהות" class="input" />
     <input type="file" @change="handleFileChange" class="input" />
-    <button @click="uploadFile" class="btn">העלה קובץ</button>
+    <button @click="uploadFile" class="btn btn-primary">העלה קובץ</button>
 
     <hr />
 
-    <button @click="fetchFilesById" class="btn">הצג קבצים לפי תעודת זהות</button>
-    <button @click="fetchAllFiles" class="btn">הצג את כל הקבצים</button>
-    <button @click="clearTables" class="btn">נקה</button>
+    <div class="d-flex justify-content-center mb-3">
+      <button @click="fetchFilesById" class="btn btn-success mx-2">הצג קבצים לפי תעודת זהות</button>
+      <button @click="fetchAllFiles" class="btn btn-success mx-2">הצג את כל הקבצים</button>
+      <button @click="clearTables" class="btn btn-warning mx-2">נקה</button>
+    </div>
+
 
     <!-- טבלת קבצים לפי ת"ז -->
     <div v-if="filesById.length" class="table-wrapper">
